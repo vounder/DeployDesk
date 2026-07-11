@@ -47,13 +47,14 @@ Den veröffentlichten Build inklusive echtem WPF-Fenster prüfen:
 
 ## Deploy-Verknüpfung
 
-Die Datei liegt im Root des Website-Repositories, zum Beispiel `meine-website.deploylink`. Das Schema befindet sich unter `docs/deploylink-v1.schema.json`.
+Die Datei liegt im Root des Website-Repositories, zum Beispiel `meine-website.deploylink`. Das aktuelle Schema befindet sich unter `docs/deploylink-v2.schema.json`. Der verpflichtende `server`-Block beschreibt das Ziel je Projekt beziehungsweise Umgebung; Geheimnisse gehören nicht hinein.
 
 Der Runner muss folgende Parameter akzeptieren:
 
 - `-NonInteractive`: keine Eingabeaufforderungen anzeigen
 - `-SkipLocalGit`: Committen wird von DeployDesk übernommen
 - `-OutputFormat JsonLines`: strukturierte Ereignisse zeilenweise ausgeben
+- `-DeployLinkPath <pfad>`: Linkdatei mit Server-, Git- und Health-Check-Konfiguration
 
 Unterstützte Ereignistypen sind `step`, `success`, `warning`, `error` und `completed`. Jede Zeile ist ein eigenständiges JSON-Objekt:
 
@@ -62,6 +63,8 @@ Unterstützte Ereignistypen sind `step`, `success`, `warning`, `error` und `comp
 ```
 
 Normale stdout-/stderr-Zeilen sind weiterhin erlaubt und erscheinen unverändert im Log.
+
+Eine vollständige Arbeitsanweisung für AI-Agenten, die ein neues Repository kompatibel machen sollen, steht in [`docs/DEPLOYDESK_AI_INTEGRATION.md`](docs/DEPLOYDESK_AI_INTEGRATION.md).
 
 ## Vertrauen und Geheimnisse
 

@@ -123,7 +123,7 @@
                     <TextBlock Text="DeployDesk" FontSize="13" FontWeight="SemiBold" Margin="9,0,0,0" VerticalAlignment="Center" />
                     <Border Background="#191B1C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                             CornerRadius="5" Padding="6,2" Margin="9,0,0,0">
-                        <TextBlock Text="0.2" FontSize="9" Foreground="{StaticResource TertiaryBrush}" />
+                        <TextBlock Text="0.3" FontSize="9" Foreground="{StaticResource TertiaryBrush}" />
                     </Border>
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="Deployment workspace" Foreground="{StaticResource TertiaryBrush}"
@@ -244,8 +244,11 @@
                                 <TextBlock Text="WORKSPACE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" />
                                 <TextBlock Text="/" Foreground="{StaticResource TertiaryBrush}" Margin="8,0" />
                                 <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="5" Padding="7,2">
-                                    <TextBlock Text="PRODUCTION" Foreground="{StaticResource AccentBrush}" FontSize="9" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding ServerEnvironment}" Foreground="{StaticResource AccentBrush}" FontSize="9" FontWeight="SemiBold" />
                                 </Border>
+                                <TextBlock Text="{Binding ServerSummary}" Foreground="{StaticResource TertiaryBrush}" FontSize="10"
+                                           Margin="9,0,0,0" VerticalAlignment="Center" MaxWidth="420" TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding ServerSummary}" />
                             </StackPanel>
                             <TextBlock Text="{Binding ProjectName}" FontSize="28" FontWeight="SemiBold" Margin="0,7,0,0" />
                             <TextBlock Text="{Binding ProjectDescription}" Foreground="{StaticResource MutedBrush}" FontSize="12"

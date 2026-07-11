@@ -10,5 +10,5 @@ public sealed class ProjectState
 {
     public string? LastDeployedCommit { get; set; }
     public DateTimeOffset? LastDeployedAt { get; set; }
-    public string? TrustedRunnerHash { get; set; }
+    public string? TrustedDeploymentHash { get; set; }
 }

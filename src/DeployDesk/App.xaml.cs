@@ -24,9 +24,16 @@ public partial class App : Application
         };
     }
 
+    public bool SuppressWindowStartup { get; set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        if (SuppressWindowStartup)
+        {
+            return;
+        }
 
         try
         {

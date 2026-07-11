@@ -34,6 +34,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private bool _isBusy;
     private string _projectName = "Kein Projekt ausgewählt";
     private string _projectDescription = "Füge eine .deploylink-Datei hinzu, um zu beginnen.";
+    private string _serverEnvironment = "NO TARGET";
+    private string _serverSummary = "Server nicht konfiguriert";
     private string _branch = "–";
     private string _dirtySummary = "–";
     private string _undeployedSummary = "–";
@@ -93,6 +95,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public string ProjectName { get => _projectName; private set => Set(ref _projectName, value); }
     public string ProjectDescription { get => _projectDescription; private set => Set(ref _projectDescription, value); }
+    public string ServerEnvironment { get => _serverEnvironment; private set => Set(ref _serverEnvironment, value); }
+    public string ServerSummary { get => _serverSummary; private set => Set(ref _serverSummary, value); }
     public string Branch { get => _branch; private set => Set(ref _branch, value); }
     public string DirtySummary { get => _dirtySummary; private set => Set(ref _dirtySummary, value); }
     public string UndeployedSummary { get => _undeployedSummary; private set => Set(ref _undeployedSummary, value); }
@@ -163,9 +167,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
             if (askForTrust)
             {
-                var runnerHash = ComputeRunnerHash(config.RunnerPath);
+                var deploymentHash = ComputeDeploymentHash(config.RunnerPath, config.SourcePath);
+                var target = $"{config.Server.User}@{config.Server.Host}:{config.Server.SshPort}";
                 var answer = MessageBox.Show(
-                    $"Projekt: {config.Project.Name}\n\nRepository:\n{config.RepositoryRoot}\n\nAusgeführter Runner:\n{config.RunnerPath}\n\nSHA-256:\n{runnerHash}\n\nMöchtest du diesem Projekt vertrauen?",
+                    $"Projekt: {config.Project.Name}\n\nRepository:\n{config.RepositoryRoot}\n\nZielserver:\n{target}\n{config.Server.RemotePath}\n\nAusgeführter Runner:\n{config.RunnerPath}\n\nDeployment-SHA-256:\n{deploymentHash}\n\nMöchtest du diesem Projekt und Ziel vertrauen?",
                     "Deploy-Projekt hinzufügen",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
@@ -179,7 +184,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                     state = new ProjectState();
                     _appState.Projects[config.Project.Id] = state;
                 }
-                state.TrustedRunnerHash = runnerHash;
+                state.TrustedDeploymentHash = deploymentHash;
             }
 
             var item = new ProjectListItem(config);
@@ -201,11 +206,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private async Task AddProjectAsync(string path)
     {
         var config = await _deployLinkService.LoadAsync(path);
-        var currentHash = ComputeRunnerHash(config.RunnerPath);
+        var currentHash = ComputeDeploymentHash(config.RunnerPath, config.SourcePath);
         if (!_appState.Projects.TryGetValue(config.Project.Id, out var state) ||
-            !string.Equals(state.TrustedRunnerHash, currentHash, StringComparison.OrdinalIgnoreCase))
+            !string.Equals(state.TrustedDeploymentHash, currentHash, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidDataException("Der Deploy-Runner wurde geändert. Bitte das Projekt erneut hinzufügen und bestätigen.");
+            throw new InvalidDataException("Deployment-Konfiguration oder Runner wurde geändert. Bitte das Projekt erneut hinzufügen und bestätigen.");
         }
         Projects.Add(new ProjectListItem(config));
     }
@@ -220,6 +225,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             ProjectName = "Kein Projekt ausgewählt";
             ProjectDescription = "Füge eine .deploylink-Datei hinzu, um zu beginnen.";
+            ServerEnvironment = "NO TARGET";
+            ServerSummary = "Server nicht konfiguriert";
             Branch = DirtySummary = UndeployedSummary = "–";
             LastDeploySummary = "Noch nie";
             return;
@@ -230,6 +237,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         ProjectDescription = string.IsNullOrWhiteSpace(config.Project.Description)
             ? config.RepositoryRoot
             : config.Project.Description;
+        ServerEnvironment = string.IsNullOrWhiteSpace(config.Server.Name)
+            ? "SERVER"
+            : config.Server.Name.ToUpperInvariant();
+        ServerSummary = $"{config.Server.User}@{config.Server.Host}:{config.Server.SshPort} · {config.Server.RemotePath}";
         LastDeploySummary = FormatLastDeploy(config.Project.Id);
         foreach (var option in config.Options)
         {
@@ -301,11 +312,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var config = selected.Config;
         try
         {
-            var currentRunnerHash = ComputeRunnerHash(config.RunnerPath);
+            var currentRunnerHash = ComputeDeploymentHash(config.RunnerPath, config.SourcePath);
             if (!_appState.Projects.TryGetValue(config.Project.Id, out var trustedState) ||
-                !string.Equals(trustedState.TrustedRunnerHash, currentRunnerHash, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(trustedState.TrustedDeploymentHash, currentRunnerHash, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("Der Deploy-Runner wurde seit dem Import geändert. Entferne das Projekt und füge es erneut hinzu, um den neuen Runner zu bestätigen.");
+                throw new InvalidOperationException("Deployment-Konfiguration oder Runner wurde seit dem Import geändert. Entferne das Projekt und füge es erneut hinzu, um das neue Ziel zu bestätigen.");
             }
 
             SetBusy(true);
@@ -338,6 +349,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 "-File", config.RunnerPath
             };
             arguments.AddRange(config.Runner.Arguments);
+            arguments.AddRange(["-DeployLinkPath", config.SourcePath]);
             AddRunnerArgument(arguments, "-NonInteractive");
             AddRunnerArgument(arguments, "-SkipLocalGit");
             if (!arguments.Contains("-OutputFormat", StringComparer.OrdinalIgnoreCase))
@@ -351,6 +363,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
 
             _deployCancellation = new CancellationTokenSource();
+            EnqueueLog($"Ziel: {config.Server.User}@{config.Server.Host}:{config.Server.SshPort} · {config.Server.RemotePath}");
             EnqueueLog($"Runner: {config.RunnerPath}");
             var result = await _processService.RunAsync(
                 "powershell.exe",
@@ -404,10 +417,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private static string ComputeRunnerHash(string runnerPath)
+    private static string ComputeDeploymentHash(string runnerPath, string deployLinkPath)
     {
-        using var stream = File.OpenRead(runnerPath);
-        return Convert.ToHexString(SHA256.HashData(stream));
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        hash.AppendData(File.ReadAllBytes(runnerPath));
+        hash.AppendData(new byte[] { 0 });
+        hash.AppendData(File.ReadAllBytes(deployLinkPath));
+        return Convert.ToHexString(hash.GetHashAndReset());
     }
 
     private void EnqueueLog(string line, bool isError = false) => _pendingLogLines.Enqueue((line, isError));

@@ -15,6 +15,7 @@ public sealed class StateService
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "DeployDesk",
         "state.json");
+    private readonly SemaphoreSlim _saveGate = new(1, 1);
 
     public async Task<AppState> LoadAsync()
     {
@@ -36,13 +37,37 @@ public sealed class StateService
 
     public async Task SaveAsync(AppState state)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_statePath)!);
-        var temporaryPath = _statePath + ".tmp";
-        await using (var stream = File.Create(temporaryPath))
+        await _saveGate.WaitAsync();
+        var temporaryPath = $"{_statePath}.{Environment.ProcessId}.{Guid.NewGuid():N}.tmp";
+        try
         {
-            await JsonSerializer.SerializeAsync(stream, state, JsonOptions);
-        }
+            Directory.CreateDirectory(Path.GetDirectoryName(_statePath)!);
+            await using (var stream = File.Create(temporaryPath))
+            {
+                await JsonSerializer.SerializeAsync(stream, state, JsonOptions);
+            }
 
-        File.Move(temporaryPath, _statePath, overwrite: true);
+            for (var attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    File.Move(temporaryPath, _statePath, overwrite: true);
+                    break;
+                }
+                catch (Exception exception) when (
+                    attempt < 4 && exception is IOException or UnauthorizedAccessException)
+                {
+                    await Task.Delay(50 * (attempt + 1));
+                }
+            }
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+            _saveGate.Release();
+        }
     }
 }

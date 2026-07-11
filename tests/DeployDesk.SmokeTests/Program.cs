@@ -1,4 +1,5 @@
 using DeployDesk.Services;
+using System.IO;
 using System.Reflection;
 using System.Windows.Threading;
 
@@ -20,6 +21,10 @@ var deployLinkService = new DeployLinkService(gitService);
 try
 {
     var config = await deployLinkService.LoadAsync(args[0]);
+    if (config.SchemaVersion != 2 || string.IsNullOrWhiteSpace(config.Server.Host))
+    {
+        throw new InvalidDataException("Schema-v2-Serverkonfiguration wurde nicht geladen.");
+    }
     var branch = await gitService.GetBranchAsync(config.RepositoryRoot);
     var changes = await gitService.GetChangesAsync(config.RepositoryRoot);
     var commits = await gitService.GetCommitsAsync(config.RepositoryRoot);
@@ -27,6 +32,7 @@ try
     Console.WriteLine($"OK: {config.Project.Name}");
     Console.WriteLine($"Repo: {config.RepositoryRoot}");
     Console.WriteLine($"Branch: {branch}");
+    Console.WriteLine($"Ziel: {config.Server.User}@{config.Server.Host}:{config.Server.SshPort}{config.Server.RemotePath}");
     Console.WriteLine($"Änderungen: {changes.Count}");
     Console.WriteLine($"Commits: {commits.Count}");
     return 0;
@@ -44,7 +50,7 @@ static int RunUiAnimationSmokeTest()
     {
         try
         {
-            var app = new DeployDesk.App();
+            var app = new DeployDesk.App { SuppressWindowStartup = true };
             app.InitializeComponent();
             var window = new DeployDesk.MainWindow();
             window.Show();
