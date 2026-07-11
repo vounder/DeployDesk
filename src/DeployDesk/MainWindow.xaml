@@ -267,7 +267,7 @@
                         </Grid>
                         <ProgressBar Grid.Row="1" IsIndeterminate="True" Visibility="{Binding ProgressVisibility}"
                                      Foreground="{StaticResource AccentBrush}" Background="{StaticResource FieldBrush}" />
-                        <TextBox x:Name="LogBox" Grid.Row="2" Text="{Binding LogText}" IsReadOnly="True" AcceptsReturn="True"
+                        <TextBox x:Name="LogBox" Grid.Row="2" Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
                                  TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                                  FontFamily="Cascadia Mono,Consolas" FontSize="11" Padding="11" Margin="0,8,0,0" />
                     </Grid>

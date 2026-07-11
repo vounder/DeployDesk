@@ -38,6 +38,12 @@ Portable Einzeldatei erzeugen:
 
 Das Ergebnis liegt anschließend unter `artifacts\publish\DeployDesk.exe`.
 
+Den veröffentlichten Build inklusive echtem WPF-Fenster prüfen:
+
+```powershell
+.\scripts\smoke-start.ps1
+```
+
 ## Deploy-Verknüpfung
 
 Die Datei liegt im Root des Website-Repositories, zum Beispiel `meine-website.deploylink`. Das Schema befindet sich unter `docs/deploylink-v1.schema.json`.
