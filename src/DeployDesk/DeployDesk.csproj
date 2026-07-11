@@ -14,9 +14,14 @@
     <PublishSingleFile>true</PublishSingleFile>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebugType>embedded</DebugType>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Authors>DeployDesk</Authors>
     <Description>Lightweight desktop deployment manager for deploy-compatible repositories.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\DeployDesk.ico" />
+    <Resource Include="Assets\DeployDesk.ico" />
+  </ItemGroup>
 
 </Project>

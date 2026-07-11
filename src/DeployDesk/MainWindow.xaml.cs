@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using DeployDesk.Models;
 using DeployDesk.Services;
@@ -36,6 +37,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private string _branch = "–";
     private string _dirtySummary = "–";
     private string _undeployedSummary = "–";
+    private string _lastDeploySummary = "Noch nie";
     private string _deployStatus = "Bereit.";
     private string _logText = "Noch kein Deploy gestartet.";
     private string _commitMessage = string.Empty;
@@ -94,9 +96,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public string Branch { get => _branch; private set => Set(ref _branch, value); }
     public string DirtySummary { get => _dirtySummary; private set => Set(ref _dirtySummary, value); }
     public string UndeployedSummary { get => _undeployedSummary; private set => Set(ref _undeployedSummary, value); }
+    public string LastDeploySummary { get => _lastDeploySummary; private set => Set(ref _lastDeploySummary, value); }
     public string DeployStatus { get => _deployStatus; private set => Set(ref _deployStatus, value); }
     public string LogText { get => _logText; private set => Set(ref _logText, value); }
     public Brush StatusBrush { get => _statusBrush; private set => Set(ref _statusBrush, value); }
+    public string DeployActionLabel => _isBusy ? "DEPLOY LÄUFT" : "JETZT DEPLOYEN";
+    public string DeployActionHint => _isBusy ? "Runner wird ausgeführt" : "Produktionsumgebung aktualisieren";
 
     public string CommitMessage
     {
@@ -216,6 +221,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             ProjectName = "Kein Projekt ausgewählt";
             ProjectDescription = "Füge eine .deploylink-Datei hinzu, um zu beginnen.";
             Branch = DirtySummary = UndeployedSummary = "–";
+            LastDeploySummary = "Noch nie";
             return;
         }
 
@@ -224,10 +230,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         ProjectDescription = string.IsNullOrWhiteSpace(config.Project.Description)
             ? config.RepositoryRoot
             : config.Project.Description;
+        LastDeploySummary = FormatLastDeploy(config.Project.Id);
         foreach (var option in config.Options)
         {
             Options.Add(new OptionItem(option));
         }
+
+        AnimateContentTransition();
     }
 
     private async Task RefreshAsync()
@@ -365,6 +374,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             state.LastDeployedCommit = deployedHead;
             state.LastDeployedAt = DateTimeOffset.Now;
             await _stateService.SaveAsync(_appState);
+            LastDeploySummary = FormatLastDeploy(config.Project.Id);
             SetStatus($"Deployment erfolgreich · {DateTime.Now:HH:mm:ss}", "AccentBrush");
         }
         catch (OperationCanceledException)
@@ -464,6 +474,23 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         OnPropertyChanged(nameof(CanRefresh));
         OnPropertyChanged(nameof(CanCancel));
         OnPropertyChanged(nameof(ProgressVisibility));
+        OnPropertyChanged(nameof(DeployActionLabel));
+        OnPropertyChanged(nameof(DeployActionHint));
+
+        if (FindResource("RunningStoryboard") is Storyboard storyboard)
+        {
+            if (value)
+            {
+                storyboard.Begin(this, true);
+            }
+            else
+            {
+                storyboard.Remove(this);
+                DeployGlow.Opacity = 0;
+                ActivityPulse.Opacity = 1;
+                ProgressTranslate.X = -190;
+            }
+        }
     }
 
     private void SetStatus(string message, string brushResource)
@@ -471,6 +498,74 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         DeployStatus = message;
         StatusBrush = (Brush)FindResource(brushResource);
     }
+
+    private string FormatLastDeploy(string projectId)
+    {
+        if (!_appState.Projects.TryGetValue(projectId, out var state) || state.LastDeployedAt is not { } deployedAt)
+        {
+            return "Noch nie";
+        }
+
+        var localTime = deployedAt.ToLocalTime();
+        return localTime.Date == DateTimeOffset.Now.Date
+            ? $"Heute, {localTime:HH:mm}"
+            : $"{localTime:dd.MM.yyyy, HH:mm}";
+    }
+
+    private void AnimateContentTransition()
+    {
+        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
+        ContentHost.BeginAnimation(OpacityProperty, new DoubleAnimation(0.55, 1, TimeSpan.FromMilliseconds(220))
+        {
+            EasingFunction = easing
+        });
+        ContentTranslate.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(7, 0, TimeSpan.FromMilliseconds(260))
+        {
+            EasingFunction = easing
+        });
+    }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(280))
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        });
+    }
+
+    private void Window_StateChanged(object? sender, EventArgs e)
+    {
+        var maximized = WindowState == WindowState.Maximized;
+        WindowFrame.CornerRadius = maximized ? new CornerRadius(0) : new CornerRadius(10);
+        WindowFrame.BorderThickness = maximized ? new Thickness(0) : new Thickness(1);
+        MaximizeGlyph.Text = maximized ? "❐" : "□";
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+        {
+            return;
+        }
+
+        if (e.ClickCount == 2)
+        {
+            ToggleMaximize();
+            return;
+        }
+
+        if (WindowState == WindowState.Normal)
+        {
+            DragMove();
+        }
+    }
+
+    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+    private void Maximize_Click(object sender, RoutedEventArgs e) => ToggleMaximize();
+    private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void ToggleMaximize() =>
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 
     private void Import_Click(object sender, RoutedEventArgs e)
     {

@@ -13,6 +13,7 @@ DeployDesk ist eine schlanke Windows-Oberfläche für Deployments aus kompatible
 - strukturierte JSON-Lines und normale Prozessausgabe live anzeigen
 - erfolgreichen Commit pro Projekt unter `%LOCALAPPDATA%\DeployDesk` merken
 - laufenden Prozess inklusive Kindprozessen abbrechen
+- reduzierte Premium-Oberfläche mit eigener Titelleiste und sanften Zustandsanimationen
 
 ## Voraussetzungen
 
