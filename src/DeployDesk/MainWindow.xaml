@@ -92,6 +92,27 @@
             </Setter>
         </Style>
 
+        <Style x:Key="SettingsCard" TargetType="Border" BasedOn="{StaticResource Card}">
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+            <Setter Property="Background" Value="{StaticResource PanelAltBrush}" />
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource FieldBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="{StaticResource PanelAltBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="Padding" Value="10,7" />
+        </Style>
+
         <Storyboard x:Key="RunningStoryboard" RepeatBehavior="Forever">
             <DoubleAnimation Storyboard.TargetName="DeployGlow" Storyboard.TargetProperty="Opacity"
                              From="0.08" To="0.28" Duration="0:0:0.85" AutoReverse="True" />
@@ -126,16 +147,19 @@
                         <TextBlock Text="0.3" FontSize="9" Foreground="{StaticResource TertiaryBrush}" />
                     </Border>
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="Deployment workspace" Foreground="{StaticResource TertiaryBrush}"
+                <TextBlock Grid.Column="1" Text="{Binding Texts[WindowSubtitle]}" Foreground="{StaticResource TertiaryBrush}"
                            FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,6,0">
-                    <Button Style="{StaticResource TitleButton}" Click="Minimize_Click" ToolTip="Minimieren">
+                    <Button Style="{StaticResource TitleButton}" Click="Settings_Click" ToolTip="{Binding Texts[Settings]}">
+                        <TextBlock Text="⚙" FontSize="14" />
+                    </Button>
+                    <Button Style="{StaticResource TitleButton}" Click="Minimize_Click" ToolTip="{Binding Texts[Minimize]}">
                         <TextBlock Text="—" FontSize="13" />
                     </Button>
-                    <Button Style="{StaticResource TitleButton}" Click="Maximize_Click" ToolTip="Maximieren">
+                    <Button Style="{StaticResource TitleButton}" Click="Maximize_Click" ToolTip="{Binding Texts[Maximize]}">
                         <TextBlock x:Name="MaximizeGlyph" Text="□" FontSize="15" />
                     </Button>
-                    <Button Style="{StaticResource TitleButton}" Click="Close_Click" ToolTip="Schließen">
+                    <Button Style="{StaticResource TitleButton}" Click="Close_Click" ToolTip="{Binding Texts[Close]}">
                         <TextBlock Text="×" FontSize="18" />
                     </Button>
                 </StackPanel>
@@ -164,8 +188,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="PROJECTS" Style="{StaticResource Eyebrow}" />
-                                <TextBlock Text="Deployment-Ziele" FontSize="17" FontWeight="SemiBold" Margin="0,5,0,0" />
+                                <TextBlock Text="{Binding Texts[Projects]}" Style="{StaticResource Eyebrow}" />
+                                <TextBlock Text="{Binding Texts[DeploymentTargets]}" FontSize="17" FontWeight="SemiBold" Margin="0,5,0,0" />
                             </StackPanel>
                             <Border Grid.Column="1" Background="#1A1C1D" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                                     CornerRadius="9" MinWidth="30" Height="30" VerticalAlignment="Center">
@@ -177,7 +201,7 @@
                         <Button Grid.Row="1" Style="{StaticResource AccentButton}" Click="Import_Click" Margin="0,0,0,13" Padding="13,10">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="＋" Foreground="{StaticResource PrimaryTextBrush}" FontSize="15" Margin="0,-1,7,0" />
-                                <TextBlock Text="Projekt hinzufügen" Foreground="{StaticResource PrimaryTextBrush}" />
+                                <TextBlock Text="{Binding Texts[AddProject]}" Foreground="{StaticResource PrimaryTextBrush}" />
                             </StackPanel>
                         </Button>
 
@@ -209,13 +233,13 @@
                             <Border Background="#151617" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                                     CornerRadius="9" Padding="11,10" Margin="0,10,0,8">
                                 <StackPanel>
-                                    <TextBlock Text="DROP ZONE" Style="{StaticResource Eyebrow}" />
-                                    <TextBlock Text=".deploylink hier ablegen" Foreground="{StaticResource MutedBrush}"
+                                    <TextBlock Text="{Binding Texts[DropZone]}" Style="{StaticResource Eyebrow}" />
+                                    <TextBlock Text="{Binding Texts[DropHint]}" Foreground="{StaticResource MutedBrush}"
                                                FontSize="11" Margin="0,4,0,0" />
                                 </StackPanel>
                             </Border>
                             <Button Style="{StaticResource GhostButton}" Click="RemoveProject_Click" IsEnabled="{Binding HasProject}" Padding="10,7">
-                                <TextBlock Text="Projekt entfernen" Foreground="{StaticResource TertiaryBrush}" FontSize="11" />
+                                <TextBlock Text="{Binding Texts[RemoveProject]}" Foreground="{StaticResource TertiaryBrush}" FontSize="11" />
                             </Button>
                         </StackPanel>
                     </Grid>
@@ -241,7 +265,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="WORKSPACE" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Texts[Workspace]}" Style="{StaticResource Eyebrow}" VerticalAlignment="Center" />
                                 <TextBlock Text="/" Foreground="{StaticResource TertiaryBrush}" Margin="8,0" />
                                 <Border Background="{StaticResource AccentSoftBrush}" CornerRadius="5" Padding="7,2">
                                     <TextBlock Text="{Binding ServerEnvironment}" Foreground="{StaticResource AccentBrush}" FontSize="9" FontWeight="SemiBold" />
@@ -257,17 +281,17 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                             <Button Style="{StaticResource GhostButton}" Click="OpenWebsite_Click" IsEnabled="{Binding CanOpenWebsite}" Margin="0,0,4,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Website" />
+                                    <TextBlock Text="{Binding Texts[Website]}" />
                                     <TextBlock Text="↗" Foreground="{StaticResource MutedBrush}" Margin="7,0,0,0" />
                                 </StackPanel>
                             </Button>
                             <Button Style="{StaticResource GhostButton}" Click="OpenRepository_Click" IsEnabled="{Binding HasProject}" Margin="0,0,4,0">
-                                <TextBlock Text="Repository" />
+                                <TextBlock Text="{Binding Texts[Repository]}" />
                             </Button>
                             <Button Style="{StaticResource FlatButton}" Click="Refresh_Click" IsEnabled="{Binding CanRefresh}" Padding="12,8">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="↻" Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,-1,6,0" />
-                                    <TextBlock Text="Sync" />
+                                    <TextBlock Text="{Binding Texts[Sync]}" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -289,7 +313,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="BRANCH" Style="{StaticResource Eyebrow}" />
+                                    <TextBlock Text="{Binding Texts[Branch]}" Style="{StaticResource Eyebrow}" />
                                     <TextBlock Text="{Binding Branch}" FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="1" Text="⌘" Foreground="{StaticResource TertiaryBrush}" FontSize="15" VerticalAlignment="Center" />
@@ -300,7 +324,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="WORKTREE" Style="{StaticResource Eyebrow}" />
+                                    <TextBlock Text="{Binding Texts[Worktree]}" Style="{StaticResource Eyebrow}" />
                                     <TextBlock Text="{Binding DirtySummary}" FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0" />
                                 </StackPanel>
                                 <Ellipse Grid.Column="1" Width="7" Height="7" Fill="{StaticResource WarningBrush}" VerticalAlignment="Center" />
@@ -311,7 +335,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="PENDING" Style="{StaticResource Eyebrow}" />
+                                    <TextBlock Text="{Binding Texts[Pending]}" Style="{StaticResource Eyebrow}" />
                                     <TextBlock Text="{Binding UndeployedSummary}" FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="1" Text="↑" Foreground="{StaticResource AccentBrush}" FontSize="16" VerticalAlignment="Center" />
@@ -320,7 +344,7 @@
 
                         <Border Grid.Column="6" Style="{StaticResource StatCard}">
                             <StackPanel>
-                                <TextBlock Text="LAST DEPLOY" Style="{StaticResource Eyebrow}" />
+                                <TextBlock Text="{Binding Texts[LastDeploy]}" Style="{StaticResource Eyebrow}" />
                                 <TextBlock Text="{Binding LastDeploySummary}" FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0"
                                            TextTrimming="CharacterEllipsis" />
                             </StackPanel>
@@ -346,8 +370,8 @@
                                                    HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0" />
                                     </Border>
                                     <StackPanel Margin="10,0,0,0">
-                                        <TextBlock Text="Deployment" Style="{StaticResource SectionTitle}" />
-                                        <TextBlock Text="Commit vorbereiten und sicher veröffentlichen" Foreground="{StaticResource TertiaryBrush}" FontSize="10.5" Margin="0,2,0,0" />
+                                        <TextBlock Text="{Binding Texts[Deployment]}" Style="{StaticResource SectionTitle}" />
+                                        <TextBlock Text="{Binding Texts[DeploymentSubtitle]}" Foreground="{StaticResource TertiaryBrush}" FontSize="10.5" Margin="0,2,0,0" />
                                     </StackPanel>
                                 </StackPanel>
                                 <Border Grid.Column="1" Background="#151817" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
@@ -366,11 +390,11 @@
                                     <ColumnDefinition Width="250" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="COMMIT MESSAGE" Style="{StaticResource Eyebrow}" />
+                                    <TextBlock Text="{Binding Texts[CommitMessage]}" Style="{StaticResource Eyebrow}" />
                                     <TextBox Text="{Binding CommitMessage, UpdateSourceTrigger=PropertyChanged}" Margin="0,7,0,10"
-                                             ToolTip="Leer lassen, um Datum und Uhrzeit automatisch zu verwenden." />
+                                             ToolTip="{Binding Texts[CommitMessageHint]}" />
                                     <StackPanel Orientation="Horizontal">
-                                        <CheckBox Content="Änderungen vor Deploy committen" IsChecked="{Binding AutoCommit}" Margin="0,0,18,0" />
+                                        <CheckBox Content="{Binding Texts[AutoCommit]}" IsChecked="{Binding AutoCommit}" Margin="0,0,18,0" />
                                         <ItemsControl ItemsSource="{Binding Options}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
@@ -403,7 +427,7 @@
                                         </Button>
                                         <Button Grid.Row="1" Style="{StaticResource GhostButton}" Click="Cancel_Click" IsEnabled="{Binding CanCancel}"
                                                 Visibility="{Binding ProgressVisibility}" Margin="0,5,0,0" Padding="8,5">
-                                            <TextBlock Text="Deployment abbrechen" Foreground="{StaticResource DangerBrush}" FontSize="10.5" />
+                                            <TextBlock Text="{Binding Texts[CancelDeployment]}" Foreground="{StaticResource DangerBrush}" FontSize="10.5" />
                                         </Button>
                                     </Grid>
                                 </Grid>
@@ -439,7 +463,7 @@
                                 <Grid Margin="17,15,17,10">
                                     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
                                     <Grid>
-                                        <TextBlock Text="Lokale Änderungen" Style="{StaticResource SectionTitle}" />
+                                        <TextBlock Text="{Binding Texts[LocalChanges]}" Style="{StaticResource SectionTitle}" />
                                         <Border HorizontalAlignment="Right" Background="#20201B" CornerRadius="8" Padding="7,3">
                                             <TextBlock Text="{Binding Changes.Count}" Foreground="{StaticResource WarningBrush}" FontSize="10" />
                                         </Border>
@@ -454,7 +478,7 @@
 
                                 <Grid Grid.Row="2" Margin="17,13,17,10">
                                     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-                                    <TextBlock Text="Letzte Commits" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Text="{Binding Texts[RecentCommits]}" Style="{StaticResource SectionTitle}" />
                                     <ListBox Grid.Row="1" ItemsSource="{Binding Commits}" ItemContainerStyle="{StaticResource CompactListItem}"
                                              Background="Transparent" BorderThickness="0" FontFamily="Cascadia Mono, Consolas"
                                              FontSize="10.5" Margin="-8,7,-8,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -482,8 +506,8 @@
                                 <Grid Margin="17,14">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="Deployment-Aktivität" Style="{StaticResource SectionTitle}" />
-                                        <TextBlock Text="Live-Ausgabe des Runners" Foreground="{StaticResource TertiaryBrush}" FontSize="10.5" Margin="0,3,0,0" />
+                                        <TextBlock Text="{Binding Texts[DeploymentActivity]}" Style="{StaticResource SectionTitle}" />
+                                        <TextBlock Text="{Binding Texts[RunnerLiveOutput]}" Foreground="{StaticResource TertiaryBrush}" FontSize="10.5" Margin="0,3,0,0" />
                                     </StackPanel>
                                     <Button Grid.Column="1" Style="{StaticResource GhostButton}" Click="CopyLog_Click" Padding="10,6">
                                         <StackPanel Orientation="Horizontal">
@@ -493,7 +517,7 @@
                                                 <Border Width="8" Height="8" BorderBrush="{StaticResource TertiaryBrush}" BorderThickness="1"
                                                         CornerRadius="1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{StaticResource PanelBrush}" />
                                             </Grid>
-                                            <TextBlock Text="Log kopieren" FontSize="10.5" />
+                                            <TextBlock Text="{Binding Texts[CopyLog]}" FontSize="10.5" />
                                         </StackPanel>
                                     </Button>
                                 </Grid>
@@ -506,6 +530,111 @@
                         </Border>
                     </Grid>
                 </Grid>
+            </Grid>
+
+            <Grid Grid.RowSpan="2" Panel.ZIndex="50" Visibility="{Binding SettingsVisibility}">
+                <Button Style="{StaticResource GhostButton}" Background="#B0000000" BorderThickness="0"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="CloseSettings_Click" />
+
+                <Border Width="430" HorizontalAlignment="Right" Background="{StaticResource SidebarBrush}"
+                        BorderBrush="{StaticResource BorderStrongBrush}" BorderThickness="1,0,0,0"
+                        Padding="24,22" Effect="{x:Null}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Texts[SettingsTitle]}" FontSize="24" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Texts[SettingsSubtitle]}" Foreground="{StaticResource MutedBrush}"
+                                           FontSize="11.5" Margin="0,5,0,0" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Style="{StaticResource TitleButton}" Click="CloseSettings_Click"
+                                    ToolTip="{Binding Texts[Close]}">
+                                <TextBlock Text="×" FontSize="18" />
+                            </Button>
+                        </Grid>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <Border Style="{StaticResource SettingsCard}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="140" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,14,0">
+                                            <TextBlock Text="{Binding Texts[Language]}" FontSize="13" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Texts[LanguageDescription]}" Foreground="{StaticResource TertiaryBrush}"
+                                                       FontSize="10.5" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                        <ComboBox Grid.Column="1" SelectedValue="{Binding LanguageCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  SelectedValuePath="Tag" VerticalAlignment="Center">
+                                            <ComboBoxItem Tag="en" Content="English" />
+                                            <ComboBoxItem Tag="de" Content="Deutsch" />
+                                        </ComboBox>
+                                    </Grid>
+                                </Border>
+
+                                <TextBlock Text="{Binding Texts[RefreshSection]}" Style="{StaticResource Eyebrow}" Margin="3,6,0,8" />
+                                <Border Style="{StaticResource SettingsCard}">
+                                    <StackPanel>
+                                        <CheckBox Content="{Binding Texts[AutoRefresh]}" IsChecked="{Binding AutoRefreshEnabled, Mode=TwoWay}" />
+                                        <TextBlock Text="{Binding Texts[AutoRefreshDescription]}" Foreground="{StaticResource TertiaryBrush}"
+                                                   FontSize="10.5" TextWrapping="Wrap" Margin="25,5,0,15" />
+                                        <Grid IsEnabled="{Binding AutoRefreshEnabled}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="70" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Texts[RefreshInterval]}" VerticalAlignment="Center" />
+                                            <ComboBox Grid.Column="1" ItemsSource="{Binding RefreshIntervalOptions}"
+                                                      SelectedValue="{Binding AutoRefreshIntervalSeconds, Mode=TwoWay}"
+                                                      VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Texts[Seconds]}" Foreground="{StaticResource MutedBrush}"
+                                                       VerticalAlignment="Center" Margin="8,0,0,0" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="{Binding Texts[SafetySection]}" Style="{StaticResource Eyebrow}" Margin="3,6,0,8" />
+                                <Border Style="{StaticResource SettingsCard}">
+                                    <StackPanel>
+                                        <CheckBox Content="{Binding Texts[ConfirmDeploy]}" IsChecked="{Binding ConfirmBeforeDeploy, Mode=TwoWay}" />
+                                        <TextBlock Text="{Binding Texts[ConfirmDeployDescription]}" Foreground="{StaticResource TertiaryBrush}"
+                                                   FontSize="10.5" TextWrapping="Wrap" Margin="25,5,0,16" />
+                                        <CheckBox Content="{Binding Texts[ClearLog]}" IsChecked="{Binding ClearLogBeforeDeploy, Mode=TwoWay}" />
+                                        <TextBlock Text="{Binding Texts[ClearLogDescription]}" Foreground="{StaticResource TertiaryBrush}"
+                                                   FontSize="10.5" TextWrapping="Wrap" Margin="25,5,0,0" />
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="{Binding Texts[LogSection]}" Style="{StaticResource Eyebrow}" Margin="3,6,0,8" />
+                                <Border Style="{StaticResource SettingsCard}">
+                                    <StackPanel>
+                                        <CheckBox Content="{Binding Texts[AutoScrollLog]}" IsChecked="{Binding AutoScrollLog, Mode=TwoWay}" />
+                                        <TextBlock Text="{Binding Texts[AutoScrollLogDescription]}" Foreground="{StaticResource TertiaryBrush}"
+                                                   FontSize="10.5" TextWrapping="Wrap" Margin="25,5,0,0" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <Border Grid.Row="2" Background="#151817" BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="8" Padding="11,9" Margin="0,14,0,0">
+                            <TextBlock Text="{Binding Texts[SettingsSaved]}" Foreground="{StaticResource TertiaryBrush}"
+                                       FontSize="10.5" HorizontalAlignment="Center" />
+                        </Border>
+                    </Grid>
+                </Border>
             </Grid>
         </Grid>
     </Border>

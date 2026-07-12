@@ -3,7 +3,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $exe = Join-Path $root "artifacts\publish\DeployDesk.exe"
 
 if (-not (Test-Path -LiteralPath $exe)) {
-    throw "DeployDesk.exe fehlt. Zuerst scripts\publish.ps1 ausführen."
+    throw "DeployDesk.exe is missing. Run scripts\publish.ps1 first."
 }
 
 $process = Start-Process -FilePath $exe -WindowStyle Hidden -PassThru
@@ -13,7 +13,7 @@ try {
         Start-Sleep -Milliseconds 250
         $process.Refresh()
         if ($process.HasExited) {
-            throw "DeployDesk wurde beim Start beendet (Exit $($process.ExitCode))."
+            throw "DeployDesk exited during startup (exit $($process.ExitCode))."
         }
         if ($process.MainWindowHandle -ne 0 -and $process.Responding) {
             $ready = $true
@@ -22,10 +22,10 @@ try {
     }
 
     if (-not $ready) {
-        throw "DeployDesk hat innerhalb von 10 Sekunden kein reagierendes Hauptfenster erstellt."
+        throw "DeployDesk did not create a responsive main window within 10 seconds."
     }
 
-    Write-Host "Starttest erfolgreich: $($process.MainWindowTitle)" -ForegroundColor Green
+    Write-Host "Startup smoke test passed: $($process.MainWindowTitle)" -ForegroundColor Green
 } finally {
     if (-not $process.HasExited) {
         Stop-Process -Id $process.Id -Force

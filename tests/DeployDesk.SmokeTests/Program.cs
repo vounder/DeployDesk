@@ -1,6 +1,7 @@
 using DeployDesk.Services;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using System.Windows.Threading;
 
 if (args is ["--ui-animation"])
@@ -8,9 +9,14 @@ if (args is ["--ui-animation"])
     return RunUiAnimationSmokeTest();
 }
 
+if (args is ["--security-validation"])
+{
+    return await RunSecurityValidationTestsAsync();
+}
+
 if (args.Length != 1)
 {
-    Console.Error.WriteLine("Aufruf: DeployDesk.SmokeTests <projekt.deploylink>");
+    Console.Error.WriteLine("Usage: DeployDesk.SmokeTests <project.deploylink>");
     return 2;
 }
 
@@ -23,17 +29,17 @@ try
     var config = await deployLinkService.LoadAsync(args[0]);
     if (config.SchemaVersion != 2 || string.IsNullOrWhiteSpace(config.Server.Host))
     {
-        throw new InvalidDataException("Schema-v2-Serverkonfiguration wurde nicht geladen.");
+        throw new InvalidDataException("The schema-v2 server configuration was not loaded.");
     }
     var branch = await gitService.GetBranchAsync(config.RepositoryRoot);
     var changes = await gitService.GetChangesAsync(config.RepositoryRoot);
     var commits = await gitService.GetCommitsAsync(config.RepositoryRoot);
 
     Console.WriteLine($"OK: {config.Project.Name}");
-    Console.WriteLine($"Repo: {config.RepositoryRoot}");
+    Console.WriteLine($"Repository: {config.RepositoryRoot}");
     Console.WriteLine($"Branch: {branch}");
-    Console.WriteLine($"Ziel: {config.Server.User}@{config.Server.Host}:{config.Server.SshPort}{config.Server.RemotePath}");
-    Console.WriteLine($"Änderungen: {changes.Count}");
+    Console.WriteLine($"Target: {config.Server.User}@{config.Server.Host}:{config.Server.SshPort}{config.Server.RemotePath}");
+    Console.WriteLine($"Changes: {changes.Count}");
     Console.WriteLine($"Commits: {commits.Count}");
     return 0;
 }
@@ -56,7 +62,7 @@ static int RunUiAnimationSmokeTest()
             window.Show();
 
             var setBusy = typeof(DeployDesk.MainWindow).GetMethod("SetBusy", BindingFlags.Instance | BindingFlags.NonPublic)
-                          ?? throw new MissingMethodException("SetBusy fehlt.");
+                          ?? throw new MissingMethodException("SetBusy is missing.");
             setBusy.Invoke(window, [true]);
 
             var frame = new DispatcherFrame();
@@ -85,7 +91,7 @@ static int RunUiAnimationSmokeTest()
     thread.Start();
     if (!thread.Join(TimeSpan.FromSeconds(10)))
     {
-        Console.Error.WriteLine("UI-Animationstest hat das Zeitlimit überschritten.");
+        Console.Error.WriteLine("The UI animation test timed out.");
         return 1;
     }
 
@@ -95,6 +101,168 @@ static int RunUiAnimationSmokeTest()
         return 1;
     }
 
-    Console.WriteLine("UI-Animationstest erfolgreich.");
+    Console.WriteLine("UI animation test passed.");
     return 0;
 }
+
+static async Task<int> RunSecurityValidationTestsAsync()
+{
+    var localization = new LocalizationService();
+    localization.SetLanguage("de");
+    if (localization["Settings"] != "Einstellungen")
+    {
+        Console.Error.WriteLine("German localization did not load.");
+        return 1;
+    }
+    localization.SetLanguage("en");
+    if (localization["Settings"] != "Settings")
+    {
+        Console.Error.WriteLine("English localization did not load.");
+        return 1;
+    }
+
+    var secretPathCheck = typeof(DeployDesk.MainWindow).GetMethod(
+        "IsPotentialSecretChange",
+        BindingFlags.Static | BindingFlags.NonPublic)
+        ?? throw new MissingMethodException("IsPotentialSecretChange is missing.");
+    if (secretPathCheck.Invoke(null, ["?? .env"]) is not true ||
+        secretPathCheck.Invoke(null, ["?? deploy/client.key"]) is not true ||
+        secretPathCheck.Invoke(null, ["?? .env.example"]) is not false)
+    {
+        Console.Error.WriteLine("Potential-secret path detection failed.");
+        return 1;
+    }
+
+    var root = Path.Combine(Path.GetTempPath(), "DeployDesk.SecurityTests", Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(root);
+    try
+    {
+        var processService = new ProcessService();
+        var git = ExecutableLocator.FindGitExecutable();
+        var initResult = await processService.RunAsync(git, ["init", "-b", "main"], root);
+        if (initResult.ExitCode != 0)
+        {
+            throw new InvalidOperationException(initResult.StandardError);
+        }
+
+        var runnerPath = Path.Combine(root, "deploy.ps1");
+        var linkPath = Path.Combine(root, "security-test.deploylink");
+        await File.WriteAllTextAsync(runnerPath, "param()\nexit 0\n");
+
+        var fixtureGitService = new GitService(processService);
+        var service = new DeployLinkService(fixtureGitService);
+
+        await File.WriteAllTextAsync(linkPath, CreateLink("deploy.ps1", "https://deploy.example.com"));
+        var valid = await service.LoadAsync(linkPath);
+        if (!Path.GetFullPath(valid.RunnerPath).Equals(Path.GetFullPath(runnerPath), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("The valid runner did not resolve as expected.");
+        }
+        if ((await fixtureGitService.GetChangesAsync(root)).Count < 2)
+        {
+            throw new InvalidDataException("Hardened Git status did not return the disposable fixture files.");
+        }
+
+        await ExpectRejectedAsync(async () =>
+        {
+            await File.WriteAllTextAsync(linkPath, CreateLink("deploy.ps1", "file:///C:/Windows/System32/calc.exe"));
+            await service.LoadAsync(linkPath);
+        }, "non-web URI schemes");
+
+        await ExpectRejectedAsync(async () =>
+        {
+            await File.WriteAllTextAsync(linkPath, CreateLink("deploy.ps1", "https://user:pass@deploy.example.com"));
+            await service.LoadAsync(linkPath);
+        }, "URI user information");
+
+        await ExpectRejectedAsync(async () =>
+        {
+            var json = CreateLink("deploy.ps1", "https://deploy.example.com");
+            var closingBrace = json.LastIndexOf('}');
+            await File.WriteAllTextAsync(linkPath, json[..closingBrace] + ",\n  \"unexpected\": true\n}\n");
+            await service.LoadAsync(linkPath);
+        }, "unknown JSON properties");
+
+        await ExpectRejectedAsync(async () =>
+        {
+            var json = CreateLink("deploy.ps1", "https://deploy.example.com");
+            await File.WriteAllTextAsync(linkPath, json.Replace(
+                "\"schemaVersion\": 2,",
+                "\"schemaVersion\": 2,\n  \"schemaVersion\": 2,"));
+            await service.LoadAsync(linkPath);
+        }, "duplicate JSON properties");
+
+        await ExpectRejectedAsync(async () =>
+        {
+            await File.WriteAllTextAsync(linkPath, CreateLink("../outside.ps1", "https://deploy.example.com"));
+            await service.LoadAsync(linkPath);
+        }, "runner traversal");
+
+        Console.WriteLine("Security validation tests passed.");
+        return 0;
+    }
+    catch (Exception exception)
+    {
+        Console.Error.WriteLine(exception);
+        return 1;
+    }
+    finally
+    {
+        if (Directory.Exists(root))
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+}
+
+static async Task ExpectRejectedAsync(Func<Task> action, string scenario)
+{
+    try
+    {
+        await action();
+    }
+    catch (Exception exception) when (exception is InvalidDataException or JsonException)
+    {
+        return;
+    }
+
+    throw new InvalidDataException($"Validation accepted {scenario}.");
+}
+
+static string CreateLink(string runnerFile, string websiteUrl) => $$"""
+{
+  "schemaVersion": 2,
+  "project": {
+    "id": "security-test",
+    "name": "Security Test",
+    "description": "Temporary validation fixture"
+  },
+  "repository": {
+    "remote": "origin",
+    "branch": "main"
+  },
+  "server": {
+    "name": "Test",
+    "host": "deploy.example.com",
+    "user": "deploy",
+    "sshPort": 22,
+    "remotePath": "/srv/security-test",
+    "healthCheck": {
+      "port": 8080,
+      "path": "/health"
+    }
+  },
+  "runner": {
+    "type": "powershell",
+    "file": "{{runnerFile}}",
+    "protocol": "deploydesk-jsonl-v1",
+    "arguments": []
+  },
+  "links": [
+    {
+      "label": "Website",
+      "url": "{{websiteUrl}}"
+    }
+  ]
+}
+""";

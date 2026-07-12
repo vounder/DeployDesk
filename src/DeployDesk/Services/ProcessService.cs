@@ -8,8 +8,12 @@ public sealed record ProcessResult(int ExitCode, string StandardOutput, string S
 
 public sealed class ProcessService
 {
+    private const int MaximumCapturedCharacters = 1_000_000;
+    private const int MaximumCallbackLineLength = 16_384;
     private readonly object _gate = new();
     private Process? _activeProcess;
+
+    public string LanguageCode { get; set; } = "en";
 
     public async Task<ProcessResult> RunAsync(
         string fileName,
@@ -39,7 +43,9 @@ public sealed class ProcessService
         using var process = new Process { StartInfo = startInfo };
         if (!process.Start())
         {
-            throw new InvalidOperationException($"Prozess konnte nicht gestartet werden: {fileName}");
+            throw new InvalidOperationException(Message(
+                $"The process could not be started: {fileName}",
+                $"Der Prozess konnte nicht gestartet werden: {fileName}"));
         }
 
         lock (_gate)
@@ -52,10 +58,36 @@ public sealed class ProcessService
 
         async Task ReadAsync(StreamReader reader, StringBuilder target, Action<string>? callback)
         {
+            var captureTruncated = false;
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
-                target.AppendLine(line);
-                callback?.Invoke(line);
+                if (target.Length < MaximumCapturedCharacters)
+                {
+                    var remaining = MaximumCapturedCharacters - target.Length;
+                    if (line.Length + Environment.NewLine.Length <= remaining)
+                    {
+                        target.AppendLine(line);
+                    }
+                    else
+                    {
+                        target.Append(line.AsSpan(0, Math.Min(line.Length, remaining)));
+                        captureTruncated = true;
+                    }
+                }
+                else
+                {
+                    captureTruncated = true;
+                }
+
+                var callbackLine = line.Length <= MaximumCallbackLineLength
+                    ? line
+                    : $"{line[..MaximumCallbackLineLength]} [line truncated]";
+                callback?.Invoke(callbackLine);
+            }
+
+            if (captureTruncated)
+            {
+                target.AppendLine().Append("[captured output truncated]");
             }
         }
 
@@ -95,6 +127,9 @@ public sealed class ProcessService
         }
     }
 
+    public string Message(string english, string german) =>
+        string.Equals(LanguageCode, "de", StringComparison.OrdinalIgnoreCase) ? german : english;
+
     private static void TryKill(Process process)
     {
         try
@@ -103,7 +138,7 @@ public sealed class ProcessService
         }
         catch (InvalidOperationException)
         {
-            // Der Prozess ist zwischen Prüfung und Abbruch bereits beendet worden.
+            // The process exited between the state check and the cancellation request.
         }
     }
 }

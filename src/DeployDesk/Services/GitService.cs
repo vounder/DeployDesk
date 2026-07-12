@@ -1,9 +1,13 @@
+using System.IO;
 using DeployDesk.Models;
 
 namespace DeployDesk.Services;
 
 public sealed class GitService(ProcessService processService)
 {
+    private readonly string _gitExecutable = ExecutableLocator.FindGitExecutable();
+    private readonly string _emptyHooksDirectory = CreateEmptyHooksDirectory();
+
     public async Task<string> FindRootAsync(string directory)
     {
         var result = await RunAsync(directory, "rev-parse", "--show-toplevel");
@@ -60,18 +64,35 @@ public sealed class GitService(ProcessService processService)
 
     private async Task<ProcessResult> RunAsync(string root, params string[] arguments)
     {
-        var result = await processService.RunAsync("git.exe", ["-C", root, .. arguments], root);
+        var result = await processService.RunAsync(
+            _gitExecutable,
+            ["-c", "core.fsmonitor=false", "-c", $"core.hooksPath={_emptyHooksDirectory}", "-C", root, .. arguments],
+            root);
         if (result.ExitCode != 0)
         {
-            throw new InvalidOperationException(
-                string.IsNullOrWhiteSpace(result.StandardError) ? "Git-Befehl fehlgeschlagen." : result.StandardError.Trim());
+            throw new InvalidOperationException(string.IsNullOrWhiteSpace(result.StandardError)
+                ? processService.Message("Git command failed.", "Git-Befehl fehlgeschlagen.")
+                : result.StandardError.Trim());
         }
 
         return result;
     }
 
     private Task<ProcessResult> RunAllowFailureAsync(string root, params string[] arguments) =>
-        processService.RunAsync("git.exe", ["-C", root, .. arguments], root);
+        processService.RunAsync(
+            _gitExecutable,
+            ["-c", "core.fsmonitor=false", "-c", $"core.hooksPath={_emptyHooksDirectory}", "-C", root, .. arguments],
+            root);
+
+    private static string CreateEmptyHooksDirectory()
+    {
+        var path = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "DeployDesk",
+            "empty-git-hooks");
+        Directory.CreateDirectory(path);
+        return path;
+    }
 
     private static IReadOnlyList<string> SplitLines(string value) =>
         value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

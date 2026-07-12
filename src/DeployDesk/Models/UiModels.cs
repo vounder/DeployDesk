@@ -23,9 +23,9 @@ public abstract class ObservableModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
-public sealed class ProjectListItem(DeployLink config) : ObservableModel
+public sealed class ProjectListItem(DeployLink config, string initialStatus = "Loading …") : ObservableModel
 {
-    private string _status = "Wird geladen …";
+    private string _status = initialStatus;
 
     public DeployLink Config { get; } = config;
     public string Name => Config.Project.Name;

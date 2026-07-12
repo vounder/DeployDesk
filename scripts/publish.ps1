@@ -15,7 +15,7 @@ dotnet publish (Join-Path $root "src\DeployDesk\DeployDesk.csproj") `
     -o $output
 
 if ($LASTEXITCODE -ne 0) {
-    throw "Publish fehlgeschlagen."
+    throw "Publishing failed."
 }
 
-Write-Host "DeployDesk wurde veröffentlicht: $output\DeployDesk.exe" -ForegroundColor Green
+Write-Host "DeployDesk was published to: $output" -ForegroundColor Green

@@ -1,0 +1,61 @@
+name: Bug report
+description: Report a reproducible problem in DeployDesk.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve DeployDesk. Do not disclose vulnerabilities or secrets here; follow `SECURITY.md` for private reporting.
+  - type: input
+    id: version
+    attributes:
+      label: DeployDesk version or commit
+      placeholder: 0.3.0 or commit SHA
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 23H2
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the behavior and its impact.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open ...
+        2. Select ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Remove credentials, private hosts, usernames, local paths, and repository-sensitive output before sharing.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed secrets and private infrastructure details from this report.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

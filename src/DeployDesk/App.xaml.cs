@@ -38,7 +38,7 @@ public partial class App : Application
         try
         {
             ResetLog();
-            WriteMessage("DeployDesk startet.");
+            WriteMessage("DeployDesk starting.");
             var window = new MainWindow();
             MainWindow = window;
             window.Show();
@@ -68,8 +68,8 @@ public partial class App : Application
     private static void ShowStartupError(Exception exception)
     {
         MessageBox.Show(
-            $"DeployDesk konnte nicht gestartet werden.\n\n{exception.Message}\n\nDetails wurden gespeichert unter:\n{LogPath}",
-            "DeployDesk – Startfehler",
+            $"DeployDesk could not be started.\n\n{exception.Message}\n\nDetails were saved to:\n{LogPath}",
+            "DeployDesk – Startup error",
             MessageBoxButton.OK,
             MessageBoxImage.Error);
     }

@@ -20,20 +20,20 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
 [Files]
-Source: "..\artifacts\publish\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\artifacts\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 Name: "{userdesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
 
 [Tasks]
-Name: "desktopicon"; Description: "Desktop-Verknüpfung erstellen"; GroupDescription: "Zusätzliche Symbole:"
+Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"
 
 [Registry]
 Root: HKCU; Subkey: "Software\Classes\.deploylink"; ValueType: string; ValueData: "DeployDesk.Project"; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\Classes\DeployDesk.Project"; ValueType: string; ValueData: "DeployDesk-Projekt"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\DeployDesk.Project"; ValueType: string; ValueData: "DeployDesk project"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\DeployDesk.Project\DefaultIcon"; ValueType: string; ValueData: "{app}\{#AppExeName},0"
 Root: HKCU; Subkey: "Software\Classes\DeployDesk.Project\shell\open\command"; ValueType: string; ValueData: """{app}\{#AppExeName}"" ""%1"""
 
 [Run]
-Filename: "{app}\{#AppExeName}"; Description: "DeployDesk starten"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#AppExeName}"; Description: "Launch DeployDesk"; Flags: nowait postinstall skipifsilent

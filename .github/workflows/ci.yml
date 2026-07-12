@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke-test:
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.422
+
+      - name: Restore
+        run: dotnet restore DeployDesk.sln
+
+      - name: Build
+        run: dotnet build DeployDesk.sln --configuration Release --no-restore
+
+      - name: Run WPF smoke test
+        run: dotnet run --project tests/DeployDesk.SmokeTests/DeployDesk.SmokeTests.csproj --configuration Release --no-build -- --ui-animation
+
+      - name: Run security validation tests
+        run: dotnet run --project tests/DeployDesk.SmokeTests/DeployDesk.SmokeTests.csproj --configuration Release --no-build -- --security-validation
+
+      - name: Audit NuGet dependencies
+        run: dotnet list DeployDesk.sln package --vulnerable --include-transitive
