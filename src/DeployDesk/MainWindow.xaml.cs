@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -92,6 +93,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public ObservableCollection<CommitItem> Commits { get; } = [];
     public IReadOnlyList<int> RefreshIntervalOptions { get; } = [5, 15, 30, 60];
     public LocalizationService Texts { get; } = new();
+    public string ApplicationVersion { get; } = GetApplicationVersion();
 
     private async void AutoRefreshTimer_Tick(object? sender, EventArgs e)
     {
@@ -102,6 +104,22 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
 
         await RefreshAsync();
+    }
+
+    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape && _isSettingsOpen)
+        {
+            CloseSettings();
+            e.Handled = true;
+            return;
+        }
+
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.OemComma)
+        {
+            ToggleSettings();
+            e.Handled = true;
+        }
     }
 
     public ProjectListItem? SelectedProject
@@ -981,14 +999,38 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
-        _isSettingsOpen = !_isSettingsOpen;
-        OnPropertyChanged(nameof(SettingsVisibility));
+        ToggleSettings();
     }
 
     private void CloseSettings_Click(object sender, RoutedEventArgs e)
     {
+        CloseSettings();
+    }
+
+    private void ToggleSettings()
+    {
+        _isSettingsOpen = !_isSettingsOpen;
+        OnPropertyChanged(nameof(SettingsVisibility));
+    }
+
+    private void CloseSettings()
+    {
+        if (!_isSettingsOpen)
+        {
+            return;
+        }
+
         _isSettingsOpen = false;
         OnPropertyChanged(nameof(SettingsVisibility));
+    }
+
+    private static string GetApplicationVersion()
+    {
+        var informationalVersion = typeof(MainWindow).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
+        var version = informationalVersion?.Split('+', 2)[0];
+        return $"v{(string.IsNullOrWhiteSpace(version) ? "0.0.0" : version)}";
     }
 
     private static bool TryGetWebUri(string value, out Uri uri)

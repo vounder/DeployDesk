@@ -7,7 +7,7 @@ confinement, process arguments, secret exposure, or unintended deployment target
 ## Supported versions
 
 There are no official release artifacts yet. Until a release process is established, security
-fixes target the latest `main` branch and the current `0.3.x` development line. Older commits are
+fixes target the latest `main` branch and the current `0.4.x` development line. Older commits are
 not maintained as supported releases.
 
 ## Report a vulnerability privately

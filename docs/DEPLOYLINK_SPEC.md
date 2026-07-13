@@ -1,6 +1,6 @@
 # DeployLink v2 Specification
 
-This document defines the public repository contract consumed by DeployDesk `0.3.x`. The
+This document defines the public repository contract consumed by DeployDesk `0.4.x`. The
 machine-readable schema is [`deploylink-v2.schema.json`](deploylink-v2.schema.json).
 
 Use this document when authoring a project link or compatible runner. Use the

@@ -10,7 +10,7 @@
         Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextBrush}"
         AllowDrop="True" UseLayoutRounding="True" SnapsToDevicePixels="True" Opacity="0"
         Loaded="Window_Loaded" StateChanged="Window_StateChanged"
-        Drop="Window_Drop" DragOver="Window_DragOver">
+        Drop="Window_Drop" DragOver="Window_DragOver" PreviewKeyDown="Window_PreviewKeyDown">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="7" GlassFrameThickness="0"
                             CornerRadius="10" UseAeroCaptionButtons="False" />
@@ -144,13 +144,13 @@
                     <TextBlock Text="DeployDesk" FontSize="13" FontWeight="SemiBold" Margin="9,0,0,0" VerticalAlignment="Center" />
                     <Border Background="#191B1C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                             CornerRadius="5" Padding="6,2" Margin="9,0,0,0">
-                        <TextBlock Text="0.3" FontSize="9" Foreground="{StaticResource TertiaryBrush}" />
+                        <TextBlock Text="{Binding ApplicationVersion}" FontSize="9" Foreground="{StaticResource TertiaryBrush}" />
                     </Border>
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="{Binding Texts[WindowSubtitle]}" Foreground="{StaticResource TertiaryBrush}"
                            FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,6,0">
-                    <Button Style="{StaticResource TitleButton}" Click="Settings_Click" ToolTip="{Binding Texts[Settings]}">
+                    <Button Style="{StaticResource TitleButton}" Click="Settings_Click" ToolTip="{Binding Texts[SettingsShortcut]}">
                         <TextBlock Text="⚙" FontSize="14" />
                     </Button>
                     <Button Style="{StaticResource TitleButton}" Click="Minimize_Click" ToolTip="{Binding Texts[Minimize]}">
@@ -240,6 +240,22 @@
                             </Border>
                             <Button Style="{StaticResource GhostButton}" Click="RemoveProject_Click" IsEnabled="{Binding HasProject}" Padding="10,7">
                                 <TextBlock Text="{Binding Texts[RemoveProject]}" Foreground="{StaticResource TertiaryBrush}" FontSize="11" />
+                            </Button>
+                            <Border Background="{StaticResource BorderBrush}" Height="1" Margin="4,8,4,10" />
+                            <Button Style="{StaticResource FlatButton}" Click="Settings_Click" Padding="12,9"
+                                    ToolTip="{Binding Texts[SettingsShortcut]}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="⚙" FontSize="14" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Texts[Settings]}" Margin="9,0,0,0"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="Ctrl+," Foreground="{StaticResource TertiaryBrush}"
+                                               FontSize="10" VerticalAlignment="Center" />
+                                </Grid>
                             </Button>
                         </StackPanel>
                     </Grid>
@@ -624,6 +640,19 @@
                                         <TextBlock Text="{Binding Texts[AutoScrollLogDescription]}" Foreground="{StaticResource TertiaryBrush}"
                                                    FontSize="10.5" TextWrapping="Wrap" Margin="25,5,0,0" />
                                     </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="{Binding Texts[AboutSection]}" Style="{StaticResource Eyebrow}" Margin="3,6,0,8" />
+                                <Border Style="{StaticResource SettingsCard}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Texts[ApplicationVersion]}" FontWeight="SemiBold" />
+                                        <TextBlock Grid.Column="1" Text="{Binding ApplicationVersion}"
+                                                   Foreground="{StaticResource MutedBrush}" />
+                                    </Grid>
                                 </Border>
                             </StackPanel>
                         </ScrollViewer>

@@ -6,6 +6,10 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $output = Join-Path $root "artifacts\publish"
 
+if (Test-Path -LiteralPath $output) {
+    Remove-Item -LiteralPath $output -Recurse -Force
+}
+
 dotnet publish (Join-Path $root "src\DeployDesk\DeployDesk.csproj") `
     -c Release `
     -r $Runtime `

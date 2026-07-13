@@ -223,10 +223,11 @@ The current version is declared independently in:
 
 - `src/DeployDesk/DeployDesk.csproj` (`Version`);
 - `installer/DeployDesk.iss` (`AppVersion`); and
-- the custom title bar's visible short version in `src/DeployDesk/MainWindow.xaml`.
+- `README.md` and version-specific compatibility documentation.
 
-Keep these values aligned for a version change. Update documentation badges and status text in the
-same change.
+The custom title bar and settings drawer read the application version from the built assembly, so
+they do not require a separate manual update. Keep the remaining declarations aligned for a version
+change and update documentation badges and status text in the same change.
 
 ## Change guidelines
 

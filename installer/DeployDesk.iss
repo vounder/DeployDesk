@@ -1,5 +1,5 @@
 #define AppName "DeployDesk"
-#define AppVersion "0.3.0"
+#define AppVersion "0.4.0"
 #define AppExeName "DeployDesk.exe"
 
 [Setup]

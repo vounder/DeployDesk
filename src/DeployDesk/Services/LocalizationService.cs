@@ -12,7 +12,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             {
                 ["WindowSubtitle"] = "Deployment workspace",
                 ["Minimize"] = "Minimize", ["Maximize"] = "Maximize", ["Close"] = "Close",
-                ["Settings"] = "Settings", ["Projects"] = "PROJECTS", ["DeploymentTargets"] = "Deployment targets",
+                ["Settings"] = "Settings", ["SettingsShortcut"] = "Settings (Ctrl+,)", ["Projects"] = "PROJECTS", ["DeploymentTargets"] = "Deployment targets",
                 ["AddProject"] = "Add project", ["DropZone"] = "DROP ZONE", ["DropHint"] = "Drop a .deploylink file here",
                 ["RemoveProject"] = "Remove project", ["Workspace"] = "WORKSPACE", ["Website"] = "Website",
                 ["Repository"] = "Repository", ["Sync"] = "Sync", ["Branch"] = "BRANCH", ["Worktree"] = "WORKTREE",
@@ -36,6 +36,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
                 ["LogSection"] = "ACTIVITY LOG", ["AutoScrollLog"] = "Follow live output",
                 ["AutoScrollLogDescription"] = "Automatically scroll to the newest runner output.",
                 ["SettingsSaved"] = "Changes are saved automatically on this device.",
+                ["AboutSection"] = "ABOUT", ["ApplicationVersion"] = "Application version",
                 ["NoProject"] = "No project selected", ["NoProjectDescription"] = "Add a .deploylink file to get started.",
                 ["NoTarget"] = "NO TARGET", ["ServerNotConfigured"] = "Server not configured", ["Never"] = "Never",
                 ["Ready"] = "Ready.", ["NoDeploymentStarted"] = "No deployment has been started yet.",
@@ -77,7 +78,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             {
                 ["WindowSubtitle"] = "Deployment-Arbeitsbereich",
                 ["Minimize"] = "Minimieren", ["Maximize"] = "Maximieren", ["Close"] = "Schließen",
-                ["Settings"] = "Einstellungen", ["Projects"] = "PROJEKTE", ["DeploymentTargets"] = "Deployment-Ziele",
+                ["Settings"] = "Einstellungen", ["SettingsShortcut"] = "Einstellungen (Strg+,)", ["Projects"] = "PROJEKTE", ["DeploymentTargets"] = "Deployment-Ziele",
                 ["AddProject"] = "Projekt hinzufügen", ["DropZone"] = "ABLAGEBEREICH", ["DropHint"] = ".deploylink hier ablegen",
                 ["RemoveProject"] = "Projekt entfernen", ["Workspace"] = "ARBEITSBEREICH", ["Website"] = "Website",
                 ["Repository"] = "Repository", ["Sync"] = "Synchronisieren", ["Branch"] = "BRANCH",
@@ -102,6 +103,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
                 ["LogSection"] = "AKTIVITÄTSLOG", ["AutoScrollLog"] = "Live-Ausgabe verfolgen",
                 ["AutoScrollLogDescription"] = "Scrollt automatisch zur neuesten Runner-Ausgabe.",
                 ["SettingsSaved"] = "Änderungen werden automatisch auf diesem Gerät gespeichert.",
+                ["AboutSection"] = "ÜBER", ["ApplicationVersion"] = "Programmversion",
                 ["NoProject"] = "Kein Projekt ausgewählt",
                 ["NoProjectDescription"] = "Füge eine .deploylink-Datei hinzu, um zu beginnen.",
                 ["NoTarget"] = "KEIN ZIEL", ["ServerNotConfigured"] = "Server nicht konfiguriert", ["Never"] = "Noch nie",

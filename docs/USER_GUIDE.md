@@ -250,7 +250,8 @@ non-zero exit code for every failed or incomplete deployment.
 
 ## Settings
 
-Open the right-side settings drawer with the gear button in the custom title bar.
+Open settings from the labeled button at the bottom of the project sidebar, the gear button in the
+title bar, or with `Ctrl+,`. Press `Esc` to close the drawer.
 
 | Setting | Behavior | Default |
 |---|---|---|

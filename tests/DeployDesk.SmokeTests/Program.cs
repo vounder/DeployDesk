@@ -61,6 +61,24 @@ static int RunUiAnimationSmokeTest()
             var window = new DeployDesk.MainWindow();
             window.Show();
 
+            var expectedVersion = typeof(DeployDesk.MainWindow).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion.Split('+', 2)[0];
+            if (window.ApplicationVersion != $"v{expectedVersion}")
+            {
+                throw new InvalidOperationException("The visible application version does not match the assembly version.");
+            }
+
+            var toggleSettings = typeof(DeployDesk.MainWindow).GetMethod(
+                "ToggleSettings",
+                BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new MissingMethodException("ToggleSettings is missing.");
+            toggleSettings.Invoke(window, null);
+            if (window.SettingsVisibility != System.Windows.Visibility.Visible)
+            {
+                throw new InvalidOperationException("The settings drawer did not open.");
+            }
+
             var setBusy = typeof(DeployDesk.MainWindow).GetMethod("SetBusy", BindingFlags.Instance | BindingFlags.NonPublic)
                           ?? throw new MissingMethodException("SetBusy is missing.");
             setBusy.Invoke(window, [true]);
