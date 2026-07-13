@@ -4,6 +4,9 @@ namespace DeployDesk.Models;
 
 public sealed class DeployLink
 {
+    [JsonPropertyName("$schema")]
+    public string? Schema { get; init; }
+
     public int SchemaVersion { get; init; }
     public ProjectDefinition Project { get; init; } = new();
     public RepositoryDefinition Repository { get; init; } = new();

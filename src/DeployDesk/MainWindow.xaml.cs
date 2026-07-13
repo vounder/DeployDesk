@@ -262,20 +262,30 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _appState.Settings ??= new ApplicationSettings();
         LoadSettings(_appState.Settings);
 
+        var projectLoadFailures = new List<string>();
         foreach (var projectFile in _appState.ProjectFiles.ToArray())
         {
             try
             {
                 await AddProjectAsync(projectFile);
             }
-            catch
+            catch (Exception exception)
             {
-                _appState.ProjectFiles.Remove(projectFile);
+                projectLoadFailures.Add($"{Path.GetFileName(projectFile)}: {exception.Message}");
             }
         }
 
         await _stateService.SaveAsync(_appState);
         SelectedProject ??= Projects.FirstOrDefault();
+
+        if (projectLoadFailures.Count > 0)
+        {
+            MessageBox.Show(
+                Texts.Format("SavedProjectsLoadFailed", string.Join(Environment.NewLine, projectLoadFailures)),
+                Texts["ProjectOpenError"],
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
     }
 
     private void LoadSettings(ApplicationSettings settings)

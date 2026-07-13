@@ -172,6 +172,10 @@ static async Task<int> RunSecurityValidationTestsAsync()
 
         await File.WriteAllTextAsync(linkPath, CreateLink("deploy.ps1", "https://deploy.example.com"));
         var valid = await service.LoadAsync(linkPath);
+        if (valid.Schema != "https://deploydesk.local/schema/deploylink-v2.json")
+        {
+            throw new InvalidDataException("The documented $schema property was not accepted.");
+        }
         if (!Path.GetFullPath(valid.RunnerPath).Equals(Path.GetFullPath(runnerPath), StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException("The valid runner did not resolve as expected.");
@@ -249,6 +253,7 @@ static async Task ExpectRejectedAsync(Func<Task> action, string scenario)
 
 static string CreateLink(string runnerFile, string websiteUrl) => $$"""
 {
+  "$schema": "https://deploydesk.local/schema/deploylink-v2.json",
   "schemaVersion": 2,
   "project": {
     "id": "security-test",
