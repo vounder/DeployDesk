@@ -15,7 +15,7 @@
     <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4?logo=windows11&logoColor=white" />
     <img alt="Framework: .NET 8" src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white" />
     <img alt="Architecture: x64" src="https://img.shields.io/badge/architecture-x64-3949AB" />
-    <img alt="Version: 0.4.0" src="https://img.shields.io/badge/version-0.4.0-35D079" />
+    <img alt="Version: 0.4.1" src="https://img.shields.io/badge/version-0.4.1-35D079" />
   </p>
 </div>
 
@@ -244,7 +244,7 @@ assume that copying only the executable is sufficient.
 
 ## Project status
 
-DeployDesk is currently version `0.4.0`. The repository includes a Windows build, WPF smoke,
+DeployDesk is currently version `0.4.1`. The repository includes a Windows build, WPF smoke,
 security-validation, and dependency-audit CI workflow. It does not yet provide official release
 artifacts, an updater, or signed binaries. The included test project remains a focused smoke and
 validation harness rather than a comprehensive unit-test suite.
